@@ -25,5 +25,9 @@
       "config": "caperandomizer.client.mixins.json",
       "environment": "client"
     }
-  ]
+  ],
+  "depends": {
+    "fabric": "*",
+    "minecraft": ">=${minecraft_version}"
+  }
 }
