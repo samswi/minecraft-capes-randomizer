@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "cape_randomizer",
+  "version": "${version}",
+  "name": "CapeRandomizer",
+  "description": "",
+  "authors": [],
+  "contact": {},
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-datagen": [
+      "org.samswi.caperandomizer.client.CaperandomizerDataGenerator"
+    ],
+    "client": [
+      "org.samswi.caperandomizer.client.CaperandomizerClient"
+    ],
+    "main": [
+      "org.samswi.caperandomizer.Caperandomizer"
+    ]
+  },
+  "mixins": [
+    "caperandomizer.mixins.json",
+    {
+      "config": "caperandomizer.client.mixins.json",
+      "environment": "client"
+    }
+  ]
+}
