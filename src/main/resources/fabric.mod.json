@@ -10,13 +10,13 @@
   "environment": "*",
   "entrypoints": {
     "fabric-datagen": [
-      "org.samswi.caperandomizer.client.CaperandomizerDataGenerator"
+      "org.samswi.caperandomizer.client.CapeRandomizerDataGenerator"
     ],
     "client": [
-      "org.samswi.caperandomizer.client.CaperandomizerClient"
+      "org.samswi.caperandomizer.client.CapeRandomizerClient"
     ],
     "main": [
-      "org.samswi.caperandomizer.Caperandomizer"
+      "org.samswi.caperandomizer.CapeRandomizer"
     ]
   },
   "mixins": [

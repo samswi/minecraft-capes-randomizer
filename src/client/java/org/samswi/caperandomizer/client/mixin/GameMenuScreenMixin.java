@@ -1,7 +1,7 @@
 package org.samswi.caperandomizer.client.mixin;
 
 import net.minecraft.client.gui.screen.GameMenuScreen;
-import org.samswi.caperandomizer.client.CaperandomizerClient;
+import org.samswi.caperandomizer.client.CapeRandomizerClient;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -12,7 +12,7 @@ public class GameMenuScreenMixin {
 
     @Inject(at = @At("TAIL"), method = "disconnect")
     private static void equipRandomCape(CallbackInfo ci){
-        new Thread(CaperandomizerClient::equipRandomCape).start();
+        new Thread(CapeRandomizerClient::equipRandomCape).start();
     }
 
 }

@@ -5,7 +5,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.fabricmc.api.ClientModInitializer;
-import net.minecraft.client.MinecraftClient;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.net.URI;
@@ -13,13 +14,16 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 
-public class CaperandomizerClient implements ClientModInitializer {
-    public static List<Cape> capesList = new ArrayList<Cape>(50);
+public class CapeRandomizerClient implements ClientModInitializer {
+    public static List<Cape> ownedCapesList = new ArrayList<Cape>(50);
+    public static List<Cape> capesPull = new ArrayList<Cape>(50);
     public static HttpClient httpClient = HttpClient.newBuilder().build();
+    public static Cape currentCape;
     public static Gson myGson = new Gson();
+    public static Logger LOGGER = LoggerFactory.getLogger("Cape Rand");
     private static String accessToken;
 
     @Override
@@ -35,29 +39,42 @@ public class CaperandomizerClient implements ClientModInitializer {
                     .setHeader("Authorization", "Bearer " + accessToken)
                     .GET()
                     .build();
-//            System.out.println(profileDataRequest.headers().toString());
             HttpResponse<String> profileDataResponse = httpClient.send(profileDataRequest, HttpResponse.BodyHandlers.ofString());
-//            System.out.println(profileDataResponse.body());
-//            System.out.println(profileDataResponse.statusCode());
             if (profileDataResponse.statusCode() == 200){
                 JsonArray capesArray = myGson.fromJson(profileDataResponse.body(), JsonObject.class).get("capes").getAsJsonArray();
-                capesList.clear();
+                ownedCapesList.clear();
                 for (JsonElement i : capesArray){
                     JsonObject j = i.getAsJsonObject();
-                    capesList.add(new Cape(j.get("id").getAsString(), j.get("url").getAsString(), j.get("alias").getAsString()));
+                    ownedCapesList.add(new Cape(j.get("id").getAsString(), j.get("url").getAsString(), j.get("alias").getAsString()));
                 }
-                System.out.println(capesList);
             }
-            CaperandomizerClient.accessToken = accessToken;
+            CapeRandomizerClient.accessToken = accessToken;
+            if (ownedCapesList.isEmpty()){
+                LOGGER.error("Failed to fetch capes or account doesn't own any");
+                return;
+            }
+            StringBuilder capesString = new StringBuilder();
+            for (Cape cape : ownedCapesList){
+                capesString.append(cape.name).append(", ");
+            }
+            LOGGER.info("Fetched {} capes: {}", ownedCapesList.size(), capesString);
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
 
     public static void equipRandomCape(){
+        if (ownedCapesList.size() <= 1) return;
+        if (capesPull.isEmpty()) {
+            capesPull = new ArrayList<>(ownedCapesList);
+            capesPull.remove(currentCape);
+        }
+
         try {
-            if (capesList.size() == 0) return;
-            equipCape(capesList.get((int)(Math.random()*capesList.size())));
+            int selectedCapeIndex = (int)(Math.random()*capesPull.size());
+            equipCape(capesPull.get(selectedCapeIndex));
+            currentCape = capesPull.get(selectedCapeIndex);
+            capesPull.remove(selectedCapeIndex);
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -71,9 +88,12 @@ public class CaperandomizerClient implements ClientModInitializer {
                 .setHeader("Content-Type", "application/json")
                 .PUT(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .build();
-        HttpResponse<String> capeChangeResponse = httpClient.send(changeCapeRequest, HttpResponse.BodyHandlers.ofString());
-//        System.out.println(capeChangeResponse.body());
-//        System.out.println(capeChangeResponse.statusCode());
-        System.out.println("Attempted to equip: " + cape.name);
+        HttpResponse<String> changeCapeResponse = httpClient.send(changeCapeRequest, HttpResponse.BodyHandlers.ofString());
+        if (changeCapeResponse.statusCode() == 200 || changeCapeResponse.statusCode() == 204){
+            LOGGER.info("Equipped \"{}\" cape", cape.name);
+        }
+        else{
+            LOGGER.error("Failed to equip cape: {}", changeCapeResponse.statusCode());
+        }
     }
 }
