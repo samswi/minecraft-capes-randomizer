@@ -21,4 +21,13 @@ public class MinecraftClientMixin {
             throw new RuntimeException(e);
         }
     }
+
+    @Inject(at = @At("HEAD"), method = "cleanUpAfterCrash")
+    private void resetCapeOnCrash(CallbackInfo ci){
+        try {
+            CapeRandomizerClient.resetCape();
+        } catch (Exception e) {
+            CapeRandomizerClient.LOGGER.error("Could not reset cape");
+        }
+    }
 }

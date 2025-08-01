@@ -60,6 +60,7 @@ public class CapeRandomizerClient implements ClientModInitializer {
                 ownedCapesList.clear();
                 originalCape = null;
                 isOriginalCapeEmpty = true;
+                capesPull = new ArrayList<>(50);
                 for (JsonElement i : capesArray){
                     JsonObject j = i.getAsJsonObject();
                     Cape capeIterator = new Cape(j.get("id").getAsString(), j.get("url").getAsString(), j.get("alias").getAsString());
@@ -69,6 +70,8 @@ public class CapeRandomizerClient implements ClientModInitializer {
                         originalCape = capeIterator;
                         isOriginalCapeEmpty = false;
                         capesString.append("(CURRENT) ");
+                    }else{
+                        capesPull.add(capeIterator);
                     }
                     capesString.append(capeIterator.name).append(", ");
                 }
@@ -80,7 +83,6 @@ public class CapeRandomizerClient implements ClientModInitializer {
             }
 
             LOGGER.info("Fetched {} capes: {}", ownedCapesList.size(), capesString);
-            capesPull = new ArrayList<>(ownedCapesList);
 
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
@@ -88,7 +90,10 @@ public class CapeRandomizerClient implements ClientModInitializer {
     }
 
     public static void equipRandomCape(){
-        if (ownedCapesList.size() <= 1) return;
+        if (ownedCapesList.size() <= 1) {
+            LOGGER.warn("Not equipping any capes because you own less than 2 capes or there was an error while retrieving them");
+            return;
+        }
         if (capesPull.isEmpty()) {
             capesPull = new ArrayList<>(ownedCapesList);
             capesPull.remove(currentCape);
