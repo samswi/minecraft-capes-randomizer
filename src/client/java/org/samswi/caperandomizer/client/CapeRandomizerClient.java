@@ -5,6 +5,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.fabricmc.api.ClientModInitializer;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 
@@ -14,7 +15,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class CapeRandomizerClient implements ClientModInitializer {
@@ -40,12 +40,18 @@ public class CapeRandomizerClient implements ClientModInitializer {
                     .GET()
                     .build();
             HttpResponse<String> profileDataResponse = httpClient.send(profileDataRequest, HttpResponse.BodyHandlers.ofString());
+            StringBuilder capesString = new StringBuilder();
             if (profileDataResponse.statusCode() == 200){
                 JsonArray capesArray = myGson.fromJson(profileDataResponse.body(), JsonObject.class).get("capes").getAsJsonArray();
                 ownedCapesList.clear();
                 for (JsonElement i : capesArray){
                     JsonObject j = i.getAsJsonObject();
-                    ownedCapesList.add(new Cape(j.get("id").getAsString(), j.get("url").getAsString(), j.get("alias").getAsString()));
+                    Cape capeIterator = new Cape(j.get("id").getAsString(), j.get("url").getAsString(), j.get("alias").getAsString());
+                    ownedCapesList.add(capeIterator);
+                    capesString.append(capeIterator.name).append(", ");
+                    if (j.get("state").getAsString().equals("ACTIVE")){
+                        currentCape = capeIterator;
+                    }
                 }
             }
             CapeRandomizerClient.accessToken = accessToken;
@@ -53,11 +59,12 @@ public class CapeRandomizerClient implements ClientModInitializer {
                 LOGGER.error("Failed to fetch capes or account doesn't own any");
                 return;
             }
-            StringBuilder capesString = new StringBuilder();
             for (Cape cape : ownedCapesList){
                 capesString.append(cape.name).append(", ");
             }
             LOGGER.info("Fetched {} capes: {}", ownedCapesList.size(), capesString);
+            capesPull = new ArrayList<>(ownedCapesList);
+
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -80,7 +87,7 @@ public class CapeRandomizerClient implements ClientModInitializer {
         }
     }
 
-    public static void equipCape(Cape cape) throws IOException, InterruptedException {
+    public static void equipCape(@NotNull Cape cape) throws IOException, InterruptedException {
         String jsonBody = "{\"capeId\":\"" + cape.id + "\"}";
         HttpRequest changeCapeRequest = HttpRequest.newBuilder()
                 .uri(URI.create("https://api.minecraftservices.com/minecraft/profile/capes/active"))

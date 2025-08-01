@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "id": "cape_randomizer",
+  "id": "cape-randomizer",
   "version": "${version}",
-  "name": "CapeRandomizer",
+  "name": "Cape Randomizer",
   "description": "",
-  "authors": [],
+  "authors": ["samswi"],
   "contact": {},
   "license": "MIT",
   "environment": "*",
