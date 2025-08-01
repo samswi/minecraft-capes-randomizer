@@ -15,6 +15,6 @@ public class SessionMixin {
 
     @Inject(at = @At("TAIL"), method = "<init>")
     public void loadCapes(String username, UUID uuid, String accessToken, Optional xuid, Optional clientId, Session.AccountType accountType, CallbackInfo ci){
-        new Thread(() -> CapeRandomizerClient.fillCapesList(accessToken)).start();
+        new Thread(() -> CapeRandomizerClient.fillCapesAndEquipRandom(accessToken)).start();
     }
 }

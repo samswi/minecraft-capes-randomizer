@@ -21,6 +21,8 @@ public class CapeRandomizerClient implements ClientModInitializer {
     public static List<Cape> ownedCapesList = new ArrayList<Cape>(50);
     public static List<Cape> capesPull = new ArrayList<Cape>(50);
     public static HttpClient httpClient = HttpClient.newBuilder().build();
+    public static boolean isOriginalCapeEmpty = false;
+    public static Cape originalCape;
     public static Cape currentCape;
     public static Gson myGson = new Gson();
     public static Logger LOGGER = LoggerFactory.getLogger("Cape Rand");
@@ -31,12 +33,24 @@ public class CapeRandomizerClient implements ClientModInitializer {
 
     }
 
-    public static void fillCapesList(String accessToken){
-        if (accessToken.length() < 200) return;
+    public static void fillCapesAndEquipRandom(String accessToken){
+        fillCapesList(accessToken);
+        equipRandomCape();
+    }
+
+    public static void fillCapesList(String newAccessToken){
+        if (newAccessToken.length() < 200) return;
         try {
+
+            try {
+                resetCape();
+            }catch (Exception e){
+                LOGGER.error("Failed to reset cape on new session");
+            }
+
             HttpRequest profileDataRequest = HttpRequest.newBuilder()
                     .uri(URI.create("https://api.minecraftservices.com/minecraft/profile"))
-                    .setHeader("Authorization", "Bearer " + accessToken)
+                    .setHeader("Authorization", "Bearer " + newAccessToken)
                     .GET()
                     .build();
             HttpResponse<String> profileDataResponse = httpClient.send(profileDataRequest, HttpResponse.BodyHandlers.ofString());
@@ -44,24 +58,27 @@ public class CapeRandomizerClient implements ClientModInitializer {
             if (profileDataResponse.statusCode() == 200){
                 JsonArray capesArray = myGson.fromJson(profileDataResponse.body(), JsonObject.class).get("capes").getAsJsonArray();
                 ownedCapesList.clear();
+                originalCape = null;
+                isOriginalCapeEmpty = true;
                 for (JsonElement i : capesArray){
                     JsonObject j = i.getAsJsonObject();
                     Cape capeIterator = new Cape(j.get("id").getAsString(), j.get("url").getAsString(), j.get("alias").getAsString());
                     ownedCapesList.add(capeIterator);
-                    capesString.append(capeIterator.name).append(", ");
                     if (j.get("state").getAsString().equals("ACTIVE")){
                         currentCape = capeIterator;
+                        originalCape = capeIterator;
+                        isOriginalCapeEmpty = false;
+                        capesString.append("(CURRENT) ");
                     }
+                    capesString.append(capeIterator.name).append(", ");
                 }
             }
-            CapeRandomizerClient.accessToken = accessToken;
+            CapeRandomizerClient.accessToken = newAccessToken;
             if (ownedCapesList.isEmpty()){
                 LOGGER.error("Failed to fetch capes or account doesn't own any");
                 return;
             }
-            for (Cape cape : ownedCapesList){
-                capesString.append(cape.name).append(", ");
-            }
+
             LOGGER.info("Fetched {} capes: {}", ownedCapesList.size(), capesString);
             capesPull = new ArrayList<>(ownedCapesList);
 
@@ -101,6 +118,24 @@ public class CapeRandomizerClient implements ClientModInitializer {
         }
         else{
             LOGGER.error("Failed to equip cape: {}", changeCapeResponse.statusCode());
+        }
+    }
+
+    public static void unequipCape() throws IOException, InterruptedException {
+        HttpRequest unequipCapeRequest = HttpRequest.newBuilder()
+                .uri(URI.create("https://api.minecraftservices.com/minecraft/profile/capes/active"))
+                .setHeader("Authorization", "Bearer " + accessToken)
+                .DELETE()
+                .build();
+        httpClient.send(unequipCapeRequest, HttpResponse.BodyHandlers.ofString());
+        LOGGER.info("Unequipped cape");
+    }
+
+    public static void resetCape() throws IOException, InterruptedException {
+        if (originalCape != null){
+            equipCape(originalCape);
+        } else if (isOriginalCapeEmpty) {
+            unequipCape();
         }
     }
 }

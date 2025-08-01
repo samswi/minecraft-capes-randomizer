@@ -6,6 +6,7 @@
   "client": [
     "DisconnectedScreenMixin",
     "GameMenuScreenMixin",
+    "MinecraftClientMixin",
     "SessionMixin"
   ],
   "injectors": {
