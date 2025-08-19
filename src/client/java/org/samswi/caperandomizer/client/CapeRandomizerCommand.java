@@ -22,7 +22,7 @@ public class CapeRandomizerCommand {
                 .executes(commandContext -> {
                     Executors.newScheduledThreadPool(1).schedule(()  -> {
                         client.execute(() -> {
-                            client.setScreen(new CapeChoosingScreen());
+                            client.setScreen(new CapeChoosingScreen(client.currentScreen));
                         });
                     },  1, TimeUnit.MILLISECONDS);
                     System.out.println("Commaand invoked");

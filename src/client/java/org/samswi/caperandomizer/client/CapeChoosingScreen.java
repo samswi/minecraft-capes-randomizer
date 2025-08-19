@@ -40,7 +40,7 @@ public class CapeChoosingScreen extends Screen {
     final MinecraftClient client = MinecraftClient.getInstance();
     public final ThreePartsLayoutWidget layout = new ThreePartsLayoutWidget(this);
 
-    public CapeChoosingScreen() {
+    public CapeChoosingScreen(Screen screen) {
         super(Text.of("hi hi hello :)"));
 
         layout.addHeader(Text.of("Select favorite capes"), client.textRenderer);
@@ -96,7 +96,7 @@ public class CapeChoosingScreen extends Screen {
         } catch (Exception ignore) {}
         CapeRandomizerClient.refreshFavoriteCapes();
         CapeRandomizerClient.equipRandomCape();
-        super.close();
+        client.setScreen(oldScreen);
     }
 
     @Override
