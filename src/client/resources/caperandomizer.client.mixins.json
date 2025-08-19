@@ -4,7 +4,6 @@
   "package": "org.samswi.caperandomizer.client.mixin",
   "compatibilityLevel": "JAVA_21",
   "client": [
-    "DebugTitleScreenMixin",
     "DisconnectedScreenMixin",
     "GameMenuScreenMixin",
     "MinecraftClientMixin",

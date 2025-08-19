@@ -35,6 +35,7 @@ public class CapeChoosingScreen extends Screen {
     private ScrollableLayoutWidget scrollableLayoutWidget;
     GridWidget grid;
     GridWidget.Adder gridAdder;
+    Screen oldScreen;
     boolean noCapes;
     final MinecraftClient client = MinecraftClient.getInstance();
     public final ThreePartsLayoutWidget layout = new ThreePartsLayoutWidget(this);

@@ -3,6 +3,7 @@ package org.samswi.caperandomizer.client;
 import com.google.gson.*;
 import com.google.gson.stream.JsonReader;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.registry.Registry;
 import org.jetbrains.annotations.NotNull;
@@ -47,6 +48,8 @@ public class CapeRandomizerClient implements ClientModInitializer {
         configFolder.mkdirs();
         capeTexturesFolder = new File(configFolder + "/cape_textures/");
         capeTexturesFolder.mkdirs();
+
+        ClientCommandRegistrationCallback.EVENT.register(CapeRandomizerCommand::register);
     }
 
     public static void fillCapesAndEquipRandom(String accessToken){
@@ -162,7 +165,7 @@ public class CapeRandomizerClient implements ClientModInitializer {
 
         try {
             int selectedCapeIndex = (int)(Math.random()*capesPull.size());
-            if (currentCape.id.equals(capesPull.get(selectedCapeIndex).id)){
+            if(currentCape != null) if (currentCape.id.equals(capesPull.get(selectedCapeIndex).id)){
                 equipRandomCape();
                 return;
             }
