@@ -3,9 +3,12 @@
   "id": "cape-randomizer",
   "version": "${version}",
   "name": "Cape Randomizer",
-  "description": "",
+  "description": "Mod for people who can't decide on their favorite cape.",
   "authors": ["samswi"],
-  "contact": {},
+  "contact": {
+    "homepage": "https://modrinth.com/mod/cape-randomizer",
+    "sources": "https://github.com/samswi/minecraft-capes-randomizer/"
+  },
   "license": "MIT",
   "environment": "*",
   "entrypoints": {
@@ -17,6 +20,9 @@
     ],
     "main": [
       "org.samswi.caperandomizer.CapeRandomizer"
+    ],
+    "modmenu": [
+      "org.samswi.caperandomizer.client.ModMenuApiImpl"
     ]
   },
   "mixins": [
