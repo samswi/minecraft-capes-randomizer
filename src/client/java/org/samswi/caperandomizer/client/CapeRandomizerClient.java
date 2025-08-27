@@ -4,6 +4,7 @@ import com.google.gson.*;
 import com.google.gson.stream.JsonReader;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.registry.Registry;
 import org.jetbrains.annotations.NotNull;
@@ -25,8 +26,8 @@ import java.util.*;
 import java.util.List;
 
 public class CapeRandomizerClient implements ClientModInitializer {
-    public static File configFolder;
-    public static File capeTexturesFolder;
+    public static File configFolder = new File(FabricLoader.getInstance().getConfigDir() + "/cape_randomizer/");
+    public static File capeTexturesFolder = new File(configFolder + "/cape_textures/");
     public static List<Cape> ownedCapesList = new ArrayList<Cape>();
     public static List<Cape> favoriteCapesList = new ArrayList<>();
     public static LinkedList<Cape> capesPull = new LinkedList<Cape>();
@@ -44,15 +45,14 @@ public class CapeRandomizerClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        configFolder = new File(MinecraftClient.getInstance().runDirectory + "/config/cape_randomizer/");
         configFolder.mkdirs();
-        capeTexturesFolder = new File(configFolder + "/cape_textures/");
         capeTexturesFolder.mkdirs();
 
         ClientCommandRegistrationCallback.EVENT.register(CapeRandomizerCommand::register);
     }
 
     public static void fillCapesAndEquipRandom(String accessToken){
+        capeTexturesFolder.mkdirs();
         fillCapesList(accessToken);
         equipRandomCape();
     }
