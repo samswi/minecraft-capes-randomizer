@@ -1,22 +1,17 @@
 package org.samswi.caperandomizer.client;
 
 import com.google.gson.*;
-import com.google.gson.stream.JsonReader;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.registry.Registry;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -154,8 +149,21 @@ public class CapeRandomizerClient implements ClientModInitializer {
             LOGGER.warn("Not equipping any capes because you own less than 2 capes or there was an error while retrieving them");
             return;
         }
-        if (favoriteCapesList.size() <= 1){
-            LOGGER.warn("You have less than 2 capes selected as your favorites, no cape will be equipped");
+        if (favoriteCapesList.isEmpty()){
+            LOGGER.warn("You have no capes selected as your favorites, no cape will be equipped");
+            return;
+        }
+        if (favoriteCapesList.size() == 1){
+            LOGGER.warn("You have only one cape selected as your favorite");
+            try {
+                if(currentCape != null) if (currentCape.id.equals(favoriteCapesList.getFirst().id)) {
+                    equipCape(favoriteCapesList.getFirst());
+                    currentCape = favoriteCapesList.getFirst();
+                }
+            } catch (IOException | InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+
             return;
         }
         if (capesPull.isEmpty()) {
