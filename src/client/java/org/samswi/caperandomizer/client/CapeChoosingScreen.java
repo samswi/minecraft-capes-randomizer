@@ -11,6 +11,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.tab.TabManager;
 import net.minecraft.client.gui.widget.*;
+import net.minecraft.client.input.AbstractInput;
 import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.client.texture.ReloadableTexture;
@@ -159,15 +160,14 @@ public class CapeChoosingScreen extends Screen {
         @Override
         protected void renderWidget(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
             super.renderWidget(context, mouseX, mouseY, deltaTicks);
-            context.fill(getX(), getY(), getX() + getWidth(), getY() + getHeight(), toggled ? 0x4400FF00 : 0x44FF0000);
-            if(getType() != SelectionType.NONE) context.drawBorder(getX(), getY(), getWidth(), getHeight(), 0xFFFFFFFF);
+            context.fill(getX() + 1, getY() + 1, getX() + getWidth() - 1, getY() + getHeight() - 1, toggled ? 0x4400FF00 : 0x44FF0000);
             defaultButton.setPosition(getX() + 5, getY() + 111);
             defaultButton.render(context, mouseX, mouseY, deltaTicks);
             context.drawTexture(RenderPipelines.GUI_TEXTURED, Identifier.of("capes:" + associatedCape.id), getX() + 10, getY() + 10, (float)1, (float)1, 60, 96, 10, 16, 64, 32, toggled ? 0xFFFFFFFF : 0x44FFFFFF);
         }
 
         @Override
-        public void onPress() {
+        public void onPress(AbstractInput input) {
             toggled = !toggled;
             CapeRandomizerClient.favoriteCapes.getAsJsonObject("capes").addProperty(associatedCape.id, toggled);
         }
@@ -200,37 +200,6 @@ public class CapeChoosingScreen extends Screen {
         @Override
         public void setFocused(@Nullable Element focused) {
 
-        }
-
-        @Override
-        public boolean mouseClicked(double mouseX, double mouseY, int button) {
-            for (Element child : children) {
-                if (child.mouseClicked(mouseX, mouseY, button)) {
-                    setFocused(child);
-                    return true; // stop once a child handled it
-                }
-            }
-            return super.mouseClicked(mouseX, mouseY, button);
-        }
-
-        @Override
-        public boolean mouseReleased(double mouseX, double mouseY, int button) {
-            for (Element child : children) {
-                if (child.mouseReleased(mouseX, mouseY, button)) {
-                    return true;
-                }
-            }
-            return super.mouseReleased(mouseX, mouseY, button);
-        }
-
-        @Override
-        public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-            for (Element child : children) {
-                if (child.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)) {
-                    return true;
-                }
-            }
-            return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
         }
 
 

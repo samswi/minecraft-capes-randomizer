@@ -5,6 +5,7 @@ import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.GridWidget;
 import net.minecraft.client.gui.widget.PressableWidget;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.input.AbstractInput;
 import net.minecraft.text.Text;
 
 public class ToggleGridScreen extends Screen {
@@ -44,7 +45,7 @@ public class ToggleGridScreen extends Screen {
         }
 
         @Override
-        public void onPress() {
+        public void onPress(AbstractInput input) {
             toggled = !toggled;
         }
 

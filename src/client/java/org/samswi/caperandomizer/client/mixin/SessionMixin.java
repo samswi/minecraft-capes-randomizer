@@ -14,7 +14,7 @@ import java.util.UUID;
 public class SessionMixin {
 
     @Inject(at = @At("TAIL"), method = "<init>")
-    public void loadCapes(String username, UUID uuid, String accessToken, Optional xuid, Optional clientId, Session.AccountType accountType, CallbackInfo ci){
+    public void loadCapes(String username, UUID uuid, String accessToken, Optional xuid, Optional clientId, CallbackInfo ci){
         new Thread(() -> CapeRandomizerClient.fillCapesAndEquipRandom(accessToken)).start();
     }
 }

@@ -33,7 +33,6 @@
     }
   ],
   "depends": {
-    "fabric": "*",
-    "minecraft": ">=${minecraft_version}"
+    "fabric": "*"
   }
 }
