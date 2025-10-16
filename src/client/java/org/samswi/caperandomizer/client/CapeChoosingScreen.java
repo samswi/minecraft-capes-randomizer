@@ -3,10 +3,7 @@ package org.samswi.caperandomizer.client;
 import com.google.gson.JsonElement;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.RenderPipelines;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.ParentElement;
-import net.minecraft.client.gui.Selectable;
+import net.minecraft.client.gui.*;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.tab.TabManager;
@@ -170,6 +167,14 @@ public class CapeChoosingScreen extends Screen {
         public void onPress(AbstractInput input) {
             toggled = !toggled;
             CapeRandomizerClient.favoriteCapes.getAsJsonObject("capes").addProperty(associatedCape.id, toggled);
+        }
+
+        @Override
+        public void onClick(Click click, boolean doubled) {
+            if (defaultButton.mouseClicked(click, false)) {
+                return;
+            }
+            onPress(click);
         }
 
         @Override
