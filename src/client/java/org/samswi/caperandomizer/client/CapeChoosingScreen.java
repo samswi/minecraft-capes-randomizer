@@ -155,8 +155,7 @@ public class CapeChoosingScreen extends Screen {
         }
 
         @Override
-        protected void renderWidget(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
-            super.renderWidget(context, mouseX, mouseY, deltaTicks);
+        protected void drawIcon(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
             context.fill(getX() + 1, getY() + 1, getX() + getWidth() - 1, getY() + getHeight() - 1, toggled ? 0x4400FF00 : 0x44FF0000);
             defaultButton.setPosition(getX() + 5, getY() + 111);
             defaultButton.render(context, mouseX, mouseY, deltaTicks);
