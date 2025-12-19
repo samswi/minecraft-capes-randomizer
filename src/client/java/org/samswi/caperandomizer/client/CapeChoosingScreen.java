@@ -89,12 +89,12 @@ public class CapeChoosingScreen extends Screen {
 
     @Override
     public void close() {
+        client.setScreen(oldScreen);
         try {
             CapeRandomizerClient.saveJsonToFile(CapeRandomizerClient.favoriteCapes, CapeRandomizerClient.favoriteCapesFile);
         } catch (Exception ignore) {}
         CapeRandomizerClient.refreshFavoriteCapes();
-        CapeRandomizerClient.equipRandomCape();
-        client.setScreen(oldScreen);
+        new Thread(CapeRandomizerClient::equipRandomCape).start();
     }
 
     @Override
