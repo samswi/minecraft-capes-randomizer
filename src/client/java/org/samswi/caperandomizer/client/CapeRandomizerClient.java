@@ -150,15 +150,17 @@ public class CapeRandomizerClient implements ClientModInitializer {
             return;
         }
         if (favoriteCapesList.isEmpty()){
-            LOGGER.warn("You have no capes selected as your favorites, no cape will be equipped");
+            LOGGER.info("You have no capes selected as your favorites, no cape will be equipped");
             return;
         }
         if (favoriteCapesList.size() == 1){
-            LOGGER.warn("You have only one cape selected as your favorite");
+            LOGGER.info("You have only one cape selected as your favorite ({})", favoriteCapesList.getFirst().name);
             try {
-                if(currentCape != null) if (currentCape.id.equals(favoriteCapesList.getFirst().id)) {
-                    equipCape(favoriteCapesList.getFirst());
-                    currentCape = favoriteCapesList.getFirst();
+                if(currentCape != null){
+                    if (!currentCape.id.equals(favoriteCapesList.getFirst().id)) {
+                        equipCape(favoriteCapesList.getFirst());
+                        currentCape = favoriteCapesList.getFirst();
+                    }
                 }
             } catch (IOException | InterruptedException e) {
                 throw new RuntimeException(e);
