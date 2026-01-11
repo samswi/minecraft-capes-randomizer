@@ -1,23 +1,28 @@
 package org.samswi.caperandomizer.client;
 
 import com.google.gson.JsonElement;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.RenderPipelines;
+import com.mojang.blaze3d.platform.NativeImage;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.gui.tab.TabManager;
-import net.minecraft.client.gui.widget.*;
-import net.minecraft.client.input.AbstractInput;
-import net.minecraft.client.texture.AbstractTexture;
-import net.minecraft.client.texture.NativeImage;
-import net.minecraft.client.texture.ReloadableTexture;
-import net.minecraft.client.texture.TextureContents;
-import net.minecraft.client.util.Icons;
-import net.minecraft.resource.ResourceManager;
-import net.minecraft.screen.ScreenTexts;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.components.AbstractButton;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.ScrollableLayout;
+import net.minecraft.client.gui.components.StringWidget;
+import net.minecraft.client.gui.components.events.ContainerEventHandler;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.layouts.GridLayout;
+import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.InputWithModifiers;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.texture.ReloadableTexture;
+import net.minecraft.client.renderer.texture.TextureContents;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.resources.ResourceManager;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -30,25 +35,25 @@ import java.util.Map;
 
 public class CapeChoosingScreen extends Screen {
 
-    private ScrollableLayoutWidget scrollableLayoutWidget;
-    GridWidget grid;
-    GridWidget.Adder gridAdder;
+    private ScrollableLayout scrollableLayoutWidget;
+    GridLayout grid;
+    GridLayout.RowHelper gridAdder;
     Screen oldScreen;
     boolean noCapes;
-    final MinecraftClient client = MinecraftClient.getInstance();
-    public final ThreePartsLayoutWidget layout = new ThreePartsLayoutWidget(this);
+    final Minecraft client = Minecraft.getInstance();
+    public final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
 
     public CapeChoosingScreen(Screen screen) {
-        super(Text.of("hi hi hello :)"));
+        super(Component.nullToEmpty("hi hi hello :)"));
 
-        layout.addHeader(Text.of("Select favorite capes"), client.textRenderer);
-        this.layout.addFooter(ButtonWidget.builder(ScreenTexts.DONE, (button) -> {
-            this.close();
+        layout.addTitleHeader(Component.nullToEmpty("Select favorite capes"), minecraft.font);
+        this.layout.addToFooter(Button.builder(CommonComponents.GUI_DONE, (button) -> {
+            this.onClose();
         }).width(200).build());
-        grid = new GridWidget();
-        grid.getMainPositioner()
-                        .margin(4);
-        gridAdder = grid.createAdder(3);
+        grid = new GridLayout();
+        grid.defaultCellSetting()
+                        .padding(4);
+        gridAdder = grid.createRowHelper(3);
         if (CapeRandomizerClient.favoriteCapes != null) {
             for (Map.Entry<String, JsonElement> entry : CapeRandomizerClient.favoriteCapes.getAsJsonObject("capes").entrySet()) {
                 Cape cape = null;
@@ -60,36 +65,36 @@ public class CapeChoosingScreen extends Screen {
                     capeWidget = new CapeWidget(0, 0, 80, 136, CapeRandomizerClient.favoriteCapes.getAsJsonObject("capes").get(cape.id).getAsBoolean(), cape);
                     if (cape.id.equals(CapeRandomizerClient.defaultCape.id)) {
                         capeWidget.defaultButton.active = false;
-                        capeWidget.defaultButton.setMessage(Text.of("Default"));
+                        capeWidget.defaultButton.setMessage(Component.nullToEmpty("Default"));
                         capeWidget.isDefault = true;
                     }
-                    gridAdder.add(capeWidget);
+                    gridAdder.addChild(capeWidget);
                 }
             }
 
-            scrollableLayoutWidget = new ScrollableLayoutWidget(client, grid, layout.getContentHeight());
+            scrollableLayoutWidget = new ScrollableLayout(minecraft, grid, layout.getContentHeight());
 
-            layout.addBody(scrollableLayoutWidget);
+            layout.addToContents(scrollableLayoutWidget);
         }
         else {
             noCapes = true;
-            layout.addBody(new TextWidget(Text.of("No capes found!"), client.textRenderer));
+            layout.addToContents(new StringWidget(Component.nullToEmpty("No capes found!"), minecraft.font));
         }
     }
 
     public void undefaultEverything(){
-        grid.forEachChild((element) -> {
+        grid.visitWidgets((element) -> {
             if (element instanceof CapeWidget) {
                 ((CapeWidget) element).defaultButton.active = true;
                 ((CapeWidget) element).isDefault = false;
-                ((CapeWidget) element).defaultButton.setMessage(Text.of("Set default"));
+                ((CapeWidget) element).defaultButton.setMessage(Component.nullToEmpty("Set default"));
             }
         });
     }
 
     @Override
-    public void close() {
-        client.setScreen(oldScreen);
+    public void onClose() {
+        minecraft.setScreen(oldScreen);
         try {
             CapeRandomizerClient.saveJsonToFile(CapeRandomizerClient.favoriteCapes, CapeRandomizerClient.favoriteCapesFile);
         } catch (Exception ignore) {}
@@ -103,73 +108,73 @@ public class CapeChoosingScreen extends Screen {
 
         layout.setPosition(0, 0);
 
-        layout.refreshPositions();
+        layout.arrangeElements();
         if (!noCapes) {
-            scrollableLayoutWidget.setHeight(layout.getContentHeight());
-            scrollableLayoutWidget.refreshPositions();
+            scrollableLayoutWidget.setMaxHeight(layout.getContentHeight());
+            scrollableLayoutWidget.arrangeElements();
             scrollableLayoutWidget.setPosition(scrollableLayoutWidget.getX(), layout.getHeaderHeight());
-            grid.refreshPositions();
+            grid.arrangeElements();
         }
-        layout.forEachChild(this::addDrawableChild);
+        layout.visitWidgets(this::addRenderableWidget);
 
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
-        context.drawTexture(RenderPipelines.GUI_TEXTURED, Screen.FOOTER_SEPARATOR_TEXTURE, 0, this.height - this.layout.getFooterHeight(), 0.0F, 0.0F, this.width, 2, 32, 2);
-        context.drawTexture(RenderPipelines.GUI_TEXTURED, Screen.HEADER_SEPARATOR_TEXTURE, 0, this.layout.getHeaderHeight() - 2, 0.0F, 0.0F, this.width, 2, 32, 2);
-        this.renderDarkening(context, 0, this.layout.getHeaderHeight(), this.width, layout.getContentHeight());
+    public void render(GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
+        context.blit(RenderPipelines.GUI_TEXTURED, Screen.FOOTER_SEPARATOR, 0, this.height - this.layout.getFooterHeight(), 0.0F, 0.0F, this.width, 2, 32, 2);
+        context.blit(RenderPipelines.GUI_TEXTURED, Screen.HEADER_SEPARATOR, 0, this.layout.getHeaderHeight() - 2, 0.0F, 0.0F, this.width, 2, 32, 2);
+        this.renderMenuBackground(context, 0, this.layout.getHeaderHeight(), this.width, layout.getContentHeight());
         super.render(context, mouseX, mouseY, deltaTicks);
     }
 
-    public class CapeWidget extends PressableWidget implements ParentElement {
+    public class CapeWidget extends AbstractButton implements ContainerEventHandler {
 
         boolean toggled;
         boolean isDefault;
-        public ButtonWidget defaultButton;
+        public Button defaultButton;
         public Cape associatedCape;
         ReloadableTexture capeTexture;
-        List<Element> children = new ArrayList<Element>(1);
+        List<GuiEventListener> children = new ArrayList<GuiEventListener>(1);
 
         public CapeWidget(int i, int j, int k, int l, boolean toggled, Cape cape) {
-            super(i, j, k, l, Text.empty());
+            super(i, j, k, l, Component.empty());
             this.toggled = toggled;
             this.associatedCape = cape;
 
-            capeTexture = new ReloadableTexture(Identifier.of("capes:" + associatedCape.id)) {
+            capeTexture = new ReloadableTexture(Identifier.parse("capes:" + associatedCape.id)) {
                 @Override
                 public TextureContents loadContents(ResourceManager resourceManager) throws IOException {
                     return new TextureContents(NativeImage.read(Files.newInputStream(Path.of(CapeRandomizerClient.capeTexturesFolder + "/" + associatedCape.id + ".png"))), null);
                 }
             };
-            MinecraftClient.getInstance().getTextureManager().registerTexture(Identifier.of("capes:" + associatedCape.id), capeTexture);
-            defaultButton = ButtonWidget.builder(Text.of("Set default"), (button) -> {
+            Minecraft.getInstance().getTextureManager().registerAndLoad(Identifier.parse("capes:" + associatedCape.id), capeTexture);
+            defaultButton = Button.builder(Component.nullToEmpty("Set default"), (button) -> {
                  undefaultEverything();
                 CapeRandomizerClient.favoriteCapes.addProperty("default", associatedCape.id);
                 this.isDefault = true;
                 button.active = false;
                 CapeRandomizerClient.defaultCape = associatedCape;
-                button.setMessage(Text.of("Default"));
+                button.setMessage(Component.nullToEmpty("Default"));
             }).size(70, 20).build();
              children.add(defaultButton);
         }
 
         @Override
-        protected void drawIcon(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
+        protected void renderContents(GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
             context.fill(getX() + 1, getY() + 1, getX() + getWidth() - 1, getY() + getHeight() - 1, toggled ? 0x4400FF00 : 0x44FF0000);
             defaultButton.setPosition(getX() + 5, getY() + 111);
             defaultButton.render(context, mouseX, mouseY, deltaTicks);
-            context.drawTexture(RenderPipelines.GUI_TEXTURED, Identifier.of("capes:" + associatedCape.id), getX() + 10, getY() + 10, (float)1, (float)1, 60, 96, 10, 16, 64, 32, toggled ? 0xFFFFFFFF : 0x44FFFFFF);
+            context.blit(RenderPipelines.GUI_TEXTURED, Identifier.parse("capes:" + associatedCape.id), getX() + 10, getY() + 10, (float)1, (float)1, 60, 96, 10, 16, 64, 32, toggled ? 0xFFFFFFFF : 0x44FFFFFF);
         }
 
         @Override
-        public void onPress(AbstractInput input) {
+        public void onPress(InputWithModifiers input) {
             toggled = !toggled;
             CapeRandomizerClient.favoriteCapes.getAsJsonObject("capes").addProperty(associatedCape.id, toggled);
         }
 
         @Override
-        public void onClick(Click click, boolean doubled) {
+        public void onClick(MouseButtonEvent click, boolean doubled) {
             if (defaultButton.mouseClicked(click, false)) {
                 return;
             }
@@ -177,12 +182,12 @@ public class CapeChoosingScreen extends Screen {
         }
 
         @Override
-        protected void appendClickableNarrations(NarrationMessageBuilder builder) {
+        protected void updateWidgetNarration(NarrationElementOutput builder) {
 
         }
 
         @Override
-        public List<? extends Element> children() {
+        public List<? extends GuiEventListener> children() {
             return children;
         }
 
@@ -197,12 +202,12 @@ public class CapeChoosingScreen extends Screen {
         }
 
         @Override
-        public @Nullable Element getFocused() {
+        public @Nullable GuiEventListener getFocused() {
             return null;
         }
 
         @Override
-        public void setFocused(@Nullable Element focused) {
+        public void setFocused(@Nullable GuiEventListener focused) {
 
         }
 

@@ -1,9 +1,5 @@
 package org.samswi.caperandomizer.client.mixin;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.ProgressScreen;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.text.Text;
 import org.samswi.caperandomizer.client.CapeRandomizerClient;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -11,8 +7,10 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.io.IOException;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
 
-@Mixin(MinecraftClient.class)
+@Mixin(Minecraft.class)
 public class MinecraftClientMixin {
 
     @Inject(at = @At("HEAD"), method = "close")
@@ -25,7 +23,7 @@ public class MinecraftClientMixin {
         }
     }
 
-    @Inject(at = @At("HEAD"), method = "cleanUpAfterCrash")
+    @Inject(at = @At("HEAD"), method = "emergencySave")
     private void resetCapeOnCrash(CallbackInfo ci){
         try {
             CapeRandomizerClient.resetCape();
@@ -34,8 +32,8 @@ public class MinecraftClientMixin {
         }
     }
 
-    @Inject(at = @At("TAIL"), method = "disconnect(Lnet/minecraft/text/Text;)V")
-    private void equipRandomCape(Text reasonText, CallbackInfo ci){
+    @Inject(at = @At("TAIL"), method = "disconnectFromWorld(Lnet/minecraft/network/chat/Component;)V")
+    private void equipRandomCape(Component reasonText, CallbackInfo ci){
         new Thread(CapeRandomizerClient::equipRandomCape).start();
     }
 }

@@ -1,6 +1,5 @@
 package org.samswi.caperandomizer.client.mixin;
 
-import net.minecraft.client.session.Session;
 import org.samswi.caperandomizer.client.CapeRandomizerClient;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -9,8 +8,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Optional;
 import java.util.UUID;
+import net.minecraft.client.User;
 
-@Mixin(Session.class)
+@Mixin(User.class)
 public class SessionMixin {
 
     @Inject(at = @At("TAIL"), method = "<init>")
