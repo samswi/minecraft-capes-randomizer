@@ -23,9 +23,9 @@ import java.util.List;
 public class CapeRandomizerClient implements ClientModInitializer {
     public static File configFolder = new File(FabricLoader.getInstance().getConfigDir() + "/cape_randomizer/");
     public static File capeTexturesFolder = new File(configFolder + "/cape_textures/");
-    public static List<Cape> ownedCapesList = new ArrayList<Cape>();
+    public static List<Cape> ownedCapesList = new ArrayList<>();
     public static List<Cape> favoriteCapesList = new ArrayList<>();
-    public static LinkedList<Cape> capesPull = new LinkedList<Cape>();
+    public static LinkedList<Cape> capesPull = new LinkedList<>();
     public static HttpClient httpClient = HttpClient.newBuilder().build();
     public static boolean isOriginalCapeEmpty = false;
     public static Cape originalCape;
@@ -183,7 +183,7 @@ public class CapeRandomizerClient implements ClientModInitializer {
             currentCape = capesPull.get(selectedCapeIndex).clone();
             capesPull.remove(selectedCapeIndex);
         } catch (IOException | InterruptedException e) {
-            throw new RuntimeException(e);
+            LOGGER.error("Failed to equip cape: " + e.getMessage());
         }
     }
 

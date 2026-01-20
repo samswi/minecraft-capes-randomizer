@@ -5,7 +5,8 @@
   "compatibilityLevel": "JAVA_21",
   "client": [
     "MinecraftClientMixin",
-    "SessionMixin"
+    "SessionMixin",
+    "SkinManagerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

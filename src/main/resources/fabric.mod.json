@@ -5,6 +5,7 @@
   "name": "Cape Randomizer",
   "description": "Mod for people who can't decide on their favorite cape.",
   "authors": ["samswi"],
+  "accessWidener" : "caperandomizer.classtweaker",
   "contact": {
     "homepage": "https://modrinth.com/mod/cape-randomizer",
     "sources": "https://github.com/samswi/minecraft-capes-randomizer/"
