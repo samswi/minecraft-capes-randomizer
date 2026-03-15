@@ -108,6 +108,9 @@ public class CapeChoosingScreen extends Screen {
 
         layout.setPosition(0, 0);
 
+        // questionable fix because minecraft calculates maxHeight to -66 for some reason (26.1-pre-2)
+        if (scrollableLayoutWidget != null) scrollableLayoutWidget.setMaxHeight(9999);
+
         layout.arrangeElements();
         if (!noCapes) {
             scrollableLayoutWidget.setMaxHeight(layout.getContentHeight());
@@ -120,11 +123,11 @@ public class CapeChoosingScreen extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
-        context.blit(RenderPipelines.GUI_TEXTURED, Screen.FOOTER_SEPARATOR, 0, this.height - this.layout.getFooterHeight(), 0.0F, 0.0F, this.width, 2, 32, 2);
-        context.blit(RenderPipelines.GUI_TEXTURED, Screen.HEADER_SEPARATOR, 0, this.layout.getHeaderHeight() - 2, 0.0F, 0.0F, this.width, 2, 32, 2);
-        this.renderMenuBackground(context, 0, this.layout.getHeaderHeight(), this.width, layout.getContentHeight());
-        super.render(context, mouseX, mouseY, deltaTicks);
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+        graphics.blit(RenderPipelines.GUI_TEXTURED, Screen.FOOTER_SEPARATOR, 0, this.height - this.layout.getFooterHeight(), 0.0F, 0.0F, this.width, 2, 32, 2);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, Screen.HEADER_SEPARATOR, 0, this.layout.getHeaderHeight() - 2, 0.0F, 0.0F, this.width, 2, 32, 2);
+        this.extractMenuBackground(graphics, 0, this.layout.getHeaderHeight(), this.width, layout.getContentHeight());
+        super.extractRenderState(graphics, mouseX, mouseY, a);
     }
 
     public class CapeWidget extends AbstractButton implements ContainerEventHandler {
@@ -160,11 +163,11 @@ public class CapeChoosingScreen extends Screen {
         }
 
         @Override
-        protected void renderContents(GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
-            context.fill(getX() + 1, getY() + 1, getX() + getWidth() - 1, getY() + getHeight() - 1, toggled ? 0x4400FF00 : 0x44FF0000);
+        protected void extractContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float deltaTicks) {
+            graphics.fill(getX() + 1, getY() + 1, getX() + getWidth() - 1, getY() + getHeight() - 1, toggled ? 0x4400FF00 : 0x44FF0000);
             defaultButton.setPosition(getX() + 5, getY() + 111);
-            defaultButton.render(context, mouseX, mouseY, deltaTicks);
-            context.blit(RenderPipelines.GUI_TEXTURED, Identifier.parse("capes:" + associatedCape.id), getX() + 10, getY() + 10, (float)1, (float)1, 60, 96, 10, 16, 64, 32, toggled ? 0xFFFFFFFF : 0x44FFFFFF);
+            defaultButton.extractRenderState(graphics, mouseX, mouseY, deltaTicks);
+            graphics.blit(RenderPipelines.GUI_TEXTURED, Identifier.parse("capes:" + associatedCape.id), getX() + 10, getY() + 10, (float)1, (float)1, 60, 96, 10, 16, 64, 32, toggled ? 0xFFFFFFFF : 0x44FFFFFF);
         }
 
         @Override
