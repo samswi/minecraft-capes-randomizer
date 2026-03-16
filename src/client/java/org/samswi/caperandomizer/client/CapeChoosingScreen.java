@@ -4,10 +4,7 @@ import com.google.gson.JsonElement;
 import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;
-import net.minecraft.client.gui.components.AbstractButton;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.ScrollableLayout;
-import net.minecraft.client.gui.components.StringWidget;
+import net.minecraft.client.gui.components.*;
 import net.minecraft.client.gui.components.events.ContainerEventHandler;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.GridLayout;
@@ -26,7 +23,6 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -40,7 +36,6 @@ public class CapeChoosingScreen extends Screen {
     GridLayout.RowHelper gridAdder;
     Screen oldScreen;
     boolean noCapes;
-    final Minecraft client = Minecraft.getInstance();
     public final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
 
     public CapeChoosingScreen(Screen screen) {
@@ -78,7 +73,11 @@ public class CapeChoosingScreen extends Screen {
         }
         else {
             noCapes = true;
-            layout.addToContents(new StringWidget(Component.nullToEmpty("No capes found!"), minecraft.font));
+            if (CapeRandomizerClient.errorMessage == null){
+                layout.addToContents(new StringWidget(Component.nullToEmpty("No capes found"), minecraft.font));
+            } else {
+                layout.addToContents(new FittingMultiLineTextWidget(0, 0, 300, 100, Component.literal(CapeRandomizerClient.errorMessage), minecraft.font));
+            }
         }
     }
 

@@ -36,6 +36,7 @@ public class CapeRandomizerClient implements ClientModInitializer {
     public static Gson myGson = new Gson();
     public static Gson prettyGson = new GsonBuilder().setPrettyPrinting().create();
     public static Logger LOGGER = LoggerFactory.getLogger("Cape Rand");
+    public static String errorMessage;
     private static String accessToken;
 
     @Override
@@ -53,7 +54,7 @@ public class CapeRandomizerClient implements ClientModInitializer {
     }
 
     public static void fillCapesList(String newAccessToken){
-        if (newAccessToken.length() < 200) return;
+        errorMessage = null;
         try {
 
             try {
@@ -69,6 +70,12 @@ public class CapeRandomizerClient implements ClientModInitializer {
                     .build();
             HttpResponse<String> profileDataResponse = httpClient.send(profileDataRequest, HttpResponse.BodyHandlers.ofString());
 
+            if (profileDataResponse.statusCode() != 200) {
+                LOGGER.error("Server responded with {} while trying to fetch owned capes list", profileDataResponse.statusCode());
+                errorMessage = "Server responded with code: " + profileDataResponse.statusCode()  + "\n\n" + profileDataResponse.body();
+                return;
+            }
+
             String playerUUID = myGson.fromJson(profileDataResponse.body(), JsonObject.class).get("id").getAsString();
             favoriteCapesFile = new File(configFolder + "/" + playerUUID + ".json");
             if (favoriteCapesFile.exists()) {
@@ -79,25 +86,28 @@ public class CapeRandomizerClient implements ClientModInitializer {
                 favoriteCapes = new JsonObject();
             }
 
+            // this should only invoke when favoriteCapesFile has a malformed JSON
+            if (favoriteCapes == null){
+                LOGGER.warn("File containing list of favorite capes appears to be malformed. It will be overwritten.");
+                favoriteCapes = new JsonObject();
+            }
 
             StringBuilder capesString = new StringBuilder();
-            if (profileDataResponse.statusCode() == 200){
-                JsonArray capesArray = myGson.fromJson(profileDataResponse.body(), JsonObject.class).get("capes").getAsJsonArray();
-                ownedCapesList.clear();
-                originalCape = null;
-                isOriginalCapeEmpty = true;
-                capesPull = new LinkedList<>();
-                for (JsonElement i : capesArray){
-                    JsonObject j = i.getAsJsonObject();
-                    Cape capeIterator = new Cape(j.get("id").getAsString(), j.get("url").getAsString(), j.get("alias").getAsString());
-                    ownedCapesList.add(capeIterator);
-                    if (j.get("state").getAsString().equals("ACTIVE")) {
-                        originalCape = capeIterator;
-                        isOriginalCapeEmpty = false;
-                        capesString.append("(CURRENT) ");
-                    }
-                    capesString.append(capeIterator.name).append(", ");
+            JsonArray capesArray = myGson.fromJson(profileDataResponse.body(), JsonObject.class).get("capes").getAsJsonArray();
+            ownedCapesList.clear();
+            originalCape = null;
+            isOriginalCapeEmpty = true;
+            capesPull = new LinkedList<>();
+            for (JsonElement i : capesArray){
+                JsonObject j = i.getAsJsonObject();
+                Cape capeIterator = new Cape(j.get("id").getAsString(), j.get("url").getAsString(), j.get("alias").getAsString());
+                ownedCapesList.add(capeIterator);
+                if (j.get("state").getAsString().equals("ACTIVE")) {
+                    originalCape = capeIterator;
+                    isOriginalCapeEmpty = false;
+                    capesString.append("(CURRENT) ");
                 }
+                capesString.append(capeIterator.name).append(", ");
             }
             CapeRandomizerClient.accessToken = newAccessToken;
             if (ownedCapesList.isEmpty()){
@@ -139,7 +149,8 @@ public class CapeRandomizerClient implements ClientModInitializer {
             LOGGER.info("Fetched {} capes: {}", ownedCapesList.size(), capesString);
             populateTextures();
 
-        } catch (IOException | InterruptedException e) {
+        } catch (Exception e) {
+            errorMessage = e.toString();
             throw new RuntimeException(e);
         }
     }
@@ -251,9 +262,18 @@ public class CapeRandomizerClient implements ClientModInitializer {
     }
 
     public static JsonObject loadJsonFromFile(File file) throws IOException {
+        JsonObject jsonObject = null;
         try (FileReader reader = new FileReader(file)) {
-            return JsonParser.parseReader(reader).getAsJsonObject();
+            try {
+                jsonObject = JsonParser.parseReader(reader).getAsJsonObject();
+            } catch (Exception e){
+
+            }
+        } catch (IOException e){
+            errorMessage = e.getMessage();
+            throw new IOException();
         }
+        return jsonObject;
     }
 
     public static void saveJsonToFile(JsonObject object, File file) {
