@@ -33,7 +33,7 @@ public class MinecraftClientMixin {
     }
 
     @Inject(at = @At("TAIL"), method = "disconnectFromWorld(Lnet/minecraft/network/chat/Component;)V")
-    private void equipRandomCape(Component reasonText, CallbackInfo ci){
+    private void equipRandomCapeAndRefresh(Component reasonText, CallbackInfo ci){
         new Thread(CapeRandomizerClient::equipRandomCape).start();
     }
 }

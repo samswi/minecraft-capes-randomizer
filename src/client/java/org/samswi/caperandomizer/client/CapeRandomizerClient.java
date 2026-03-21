@@ -4,6 +4,8 @@ import com.google.gson.*;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.client.Minecraft;
+import net.minecraft.util.Util;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
@@ -19,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public class CapeRandomizerClient implements ClientModInitializer {
     public static File configFolder = new File(FabricLoader.getInstance().getConfigDir() + "/cape_randomizer/");
@@ -35,6 +38,7 @@ public class CapeRandomizerClient implements ClientModInitializer {
     public static JsonObject favoriteCapes;
     public static Gson myGson = new Gson();
     public static Gson prettyGson = new GsonBuilder().setPrettyPrinting().create();
+    public static Minecraft client = Minecraft.getInstance();
     public static Logger LOGGER = LoggerFactory.getLogger("Cape Rand");
     public static String errorMessage;
     private static String accessToken;
@@ -212,7 +216,12 @@ public class CapeRandomizerClient implements ClientModInitializer {
         }
         else{
             LOGGER.error("Failed to equip cape: {}", changeCapeResponse.statusCode());
+            return;
         }
+
+        client.profileFuture = client.isOfflineDeveloperMode()
+                ? CompletableFuture.completedFuture(null)
+                : CompletableFuture.supplyAsync(() -> client.services().sessionService().fetchProfile(client.getUser().getProfileId(), true), Util.nonCriticalIoPool());
     }
 
     public static void unequipCape() throws IOException, InterruptedException {

@@ -1,4 +1,4 @@
 classTweaker v1 official
 
-accessible field net/minecraft/client/resources/SkinManager skinCache Lcom/google/common/cache/LoadingCache;
-accessible class net/minecraft/client/resources/SkinManager$CacheKey
+accessible field net/minecraft/client/Minecraft profileFuture Ljava/util/concurrent/CompletableFuture;
+mutable field net/minecraft/client/Minecraft profileFuture Ljava/util/concurrent/CompletableFuture;
