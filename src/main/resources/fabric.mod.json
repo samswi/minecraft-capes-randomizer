@@ -34,6 +34,7 @@
     }
   ],
   "depends": {
-    "fabric-api": "*"
+    "fabric-api": "*",
+    "minecraft": ">=26.1"
   }
 }
